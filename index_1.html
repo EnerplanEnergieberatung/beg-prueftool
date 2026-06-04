@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BEG Förderfähigkeitsprüfer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      color: #111827;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #1a5276 60%, #117a65 100%);
+      padding: 28px 32px;
+      color: #fff;
+    }
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .header-icon { font-size: 32px; }
+    .header-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .header-sub { font-size: 13px; opacity: .75; margin-top: 2px; }
+
+    /* ── Setup banner ── */
+    .setup-banner {
+      background: #fef3c7;
+      border: 1.5px solid #fcd34d;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #92400e;
+    }
+    .setup-banner strong { display: block; margin-bottom: 6px; font-size: 15px; }
+    .setup-banner input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #fcd34d;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: monospace;
+      background: #fff;
+      color: #111827;
+      margin-top: 8px;
+      outline: none;
+    }
+    .setup-banner input:focus { border-color: #1a5276; }
+
+    /* ── Main container ── */
+    .main { max-width: 900px; margin: 0 auto; padding: 28px 20px; }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 16px;
+    }
+
+    /* ── Drop zone ── */
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: #f8fafc;
+      user-select: none;
+    }
+    .dropzone.over { border-color: #1a5276; background: #eff6ff; }
+    .dropzone-icon { font-size: 36px; margin-bottom: 8px; }
+    .dropzone-label { font-weight: 600; color: #374151; margin-bottom: 4px; }
+    .dropzone-hint { font-size: 13px; color: #9ca3af; }
+
+    /* ── File list ── */
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #f9fafb;
+      border-radius: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .file-info { flex: 1; min-width: 140px; }
+    .file-name { font-size: 13px; font-weight: 600; color: #111827; }
+    .file-size { font-size: 11px; color: #9ca3af; }
+    .file-type-select {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: #374151;
+      font-family: inherit;
+    }
+    .btn-remove {
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 8px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ── Analyze button ── */
+    .btn-analyze {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e3a5f, #117a65);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-bottom: 28px;
+      letter-spacing: .3px;
+      box-shadow: 0 4px 16px rgba(30,58,95,.3);
+      transition: all .2s;
+      font-family: inherit;
+    }
+    .btn-analyze:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ── Error ── */
+    .error-box {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      border-radius: 12px;
+      padding: 16px;
+      color: #991b1b;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    /* ── Gesamtergebnis ── */
+    .result-overall {
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+      border: 1.5px solid;
+    }
+    .result-overall-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .result-overall-title { font-weight: 800; font-size: 17px; }
+    .result-overall-chip {
+      margin-left: auto;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+    .result-badges { display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap; }
+    .result-summary { font-size: 14px; line-height: 1.6; }
+
+    /* ── Section accordion ── */
+    .section { margin-bottom: 16px; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+    .section-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: #f9fafb;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+    }
+    .section-header-icon { font-size: 18px; }
+    .section-header-title { font-weight: 700; font-size: 15px; color: #111827; flex: 1; }
+    .section-header-arrow { color: #6b7280; font-size: 18px; }
+    .section-body { padding: 16px 18px; background: #fff; display: none; }
+    .section-body.open { display: block; }
+
+    /* ── Badges ── */
+    .badge {
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      font-family: monospace;
+      white-space: nowrap;
+    }
+    .badge-ja    { background:#d1fae5; color:#065f46; }
+    .badge-nein  { background:#fee2e2; color:#991b1b; }
+    .badge-bedingt { background:#fef3c7; color:#92400e; }
+    .badge-ok    { background:#d1fae5; color:#065f46; }
+    .badge-mangelhaft { background:#fef3c7; color:#92400e; }
+    .badge-fehlend { background:#fee2e2; color:#991b1b; }
+    .badge-unklar { background:#e0e7ff; color:#3730a3; }
+
+    .relevanz-badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .relevanz-hoch   { background:#fee2e2; color:#991b1b; }
+    .relevanz-mittel { background:#fef3c7; color:#92400e; }
+    .relevanz-niedrig{ background:#d1fae5; color:#065f46; }
+
+    /* ── Mängel item ── */
+    .mangel-item {
+      padding: 12px 14px;
+      background: #fafafa;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 3px solid #f59e0b;
+    }
+    .mangel-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+    .mangel-title  { font-weight:700; font-size:13px; color:#111827; }
+    .mangel-meta   { font-size:12px; color:#6b7280; margin-top:2px; }
+
+    /* ── Technische Prüfung row ── */
+    .tech-row {
+      display:flex; gap:12px; padding:12px 14px;
+      background:#f9fafb; border-radius:10px;
+      align-items:flex-start; margin-bottom:8px; flex-wrap:wrap;
+    }
+    .tech-label { min-width:220px; font-weight:600; font-size:13px; color:#374151; padding-top:1px; }
+    .tech-detail { font-size:13px; color:#6b7280; flex:1; }
+
+    /* ── Förderrecht row ── */
+    .foerder-row { padding:12px 14px; background:#f9fafb; border-radius:10px; margin-bottom:8px; }
+    .foerder-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+    .foerder-title { font-weight:700; font-size:13px; color:#111827; }
+    .foerder-desc  { font-size:12px; color:#6b7280; }
+    .foerder-quelle{ font-size:11px; color:#9ca3af; margin-top:3px; }
+
+    /* ── Empfehlung ── */
+    .prog-chip {
+      background:#dbeafe; color:#1e40af;
+      padding:4px 12px; border-radius:20px;
+      font-size:13px; font-weight:600; display:inline-block; margin:2px;
+    }
+    .quote-chip {
+      background:#d1fae5; color:#065f46;
+      padding:2px 10px; border-radius:16px;
+      font-weight:700; font-size:14px;
+    }
+    .emp-row {
+      font-size:13px; color:#374151;
+      padding:4px 0; border-bottom:1px solid #f3f4f6;
+      display:flex; gap:8px;
+    }
+    .emp-row-icon-green { color:#059669; }
+    .emp-row-icon-amber { color:#f59e0b; }
+
+    .sub-title { font-weight:700; font-size:13px; color:#1e3a5f; margin-bottom:8px; }
+    .sub-title-warn { font-weight:700; font-size:13px; color:#92400e; margin-bottom:8px; }
+
+    /* ── Footer ── */
+    .footer-note {
+      text-align:center; padding:16px 0;
+      font-size:12px; color:#9ca3af;
+      border-top:1px solid #e5e7eb; margin-top:8px;
+    }
+
+    /* ── Spinner ── */
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spinner {
+      display:inline-block; width:16px; height:16px;
+      border:2px solid rgba(255,255,255,.4);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+      vertical-align:middle; margin-right:8px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <span class="header-icon">🏛️</span>
+    <div>
+      <div class="header-title">BEG Förderfähigkeitsprüfer</div>
+      <div class="header-sub">KI-gestützte Prüfung nach BAFA · KfW · BEG EM/WG/NWG · TMA</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- API Key Setup -->
+  <div class="setup-banner" id="setupBanner">
+    <strong>🔑 API-Key einrichten (einmalig pro Browser)</strong>
+    Gib deinen Anthropic API-Key ein. Er wird nur in diesem Browser gespeichert und nie übertragen.
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" />
+    <div style="margin-top:8px; font-size:12px; color:#92400e;">
+      Noch kein Key? → <a href="https://console.anthropic.com" target="_blank" style="color:#1a5276;">console.anthropic.com</a>
+    </div>
+  </div>
+
+  <!-- Upload Card -->
+  <div class="card">
+    <div class="card-title">📂 Unterlagen hochladen</div>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-icon">📤</div>
+      <div class="dropzone-label">Dateien hierher ziehen oder klicken</div>
+      <div class="dropzone-hint">PDF, JPG, PNG – Heizlastberechnungen, Angebote, Datenblätter usw.</div>
+    </div>
+    <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none" />
+
+    <div id="fileList"></div>
+  </div>
+
+  <!-- Analyze Button -->
+  <button class="btn-analyze" id="analyzeBtn" disabled>
+    🔍 Förderfähigkeit prüfen (0 Dokumente)
+  </button>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox" style="display:none"></div>
+
+  <!-- Results -->
+  <div id="results"></div>
+
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────
+const state = { files: [] };
+
+const DOCUMENT_TYPES = [
+  { id:"heizlast",      label:"🌡️ Heizlastberechnung" },
+  { id:"hydraulisch",   label:"⚙️ Hydraulischer Abgleich" },
+  { id:"angebot",       label:"📋 Fachunternehmerangebot" },
+  { id:"datenblatt",    label:"📄 Technisches Datenblatt" },
+  { id:"energieberatung",label:"💡 Energieberatungsbericht" },
+  { id:"isfp",          label:"🏠 iSFP-Unterlagen" },
+  { id:"foerderantrag", label:"📝 Förderantrag" },
+  { id:"sonstiges",     label:"📁 Sonstige Unterlagen" },
+];
+
+const SYSTEM_PROMPT = `Du bist ein spezialisierter Fördermittel- und TGA-Prüfer für energetische Sanierungen in Deutschland.
+
+Deine Aufgabe besteht darin, eingereichte Heizlastberechnungen, hydraulische Abgleiche, Fachunternehmerangebote, technische Datenblätter und weitere Projektunterlagen darauf zu prüfen, ob die geplante Maßnahme nach den aktuell gültigen Förderbedingungen der Bundesförderung für effiziente Gebäude (BEG) förderfähig ist.
+
+Dabei sind insbesondere die aktuellen Anforderungen von BAFA, KfW, BEG EM, BEG WG und BEG NWG sowie die jeweils gültigen technischen Mindestanforderungen (TMA) zu berücksichtigen.
+
+Nutze als rechtliche und technische Grundlage:
+- Aktuelle BEG-Richtlinien und technische Mindestanforderungen (TMA)
+- BAFA- und KfW-Förderbedingungen
+- DIN EN 12831 (Heizlastberechnung)
+- Anforderungen an den hydraulischen Abgleich
+- GEG (Gebäudeenergiegesetz)
+- Aktuelle Förderrichtlinien für Wärmepumpen, Biomasseanlagen, Solarthermie, Heizungsoptimierung
+
+Prüfe insbesondere:
+1. Sind alle erforderlichen Unterlagen vorhanden?
+2. Ist die Heizlastberechnung vollständig und normgerecht (DIN EN 12831)?
+3. Ist die Anlagenauslegung plausibel (keine Überdimensionierung)?
+4. Wurde ein förderkonformer hydraulischer Abgleich (Verfahren A oder B) nachgewiesen?
+5. Stimmen Heizlast, Anlagenleistung und Komponenten überein?
+6. Entsprechen die Komponenten den aktuellen Förderanforderungen?
+7. Sind alle technischen Mindestanforderungen (TMA) erfüllt?
+8. Sind die angebotenen Kosten grundsätzlich förderfähig?
+9. Gibt es Ausschlusskriterien für eine Förderung?
+10. Welche Förderprogramme kommen infrage?
+
+WICHTIGE REGEL: Treffe niemals Vermutungen. Wenn Angaben fehlen, formuliere explizit: "Eine abschließende Förderfähigkeitsbewertung ist aufgrund fehlender Nachweise derzeit nicht möglich."
+
+Antworte AUSSCHLIESSLICH im folgenden JSON-Format (kein Markdown, keine Erklärungen außerhalb):
+{
+  "gesamtergebnis": {
+    "bafa": "JA|NEIN|BEDINGT",
+    "kfw": "JA|NEIN|BEDINGT",
+    "gesamtbewertung": "Förderfähig|Förderfähig nach Nachbesserung|Nicht förderfähig",
+    "zusammenfassung": "Kurze Gesamtzusammenfassung in 2-3 Sätzen"
+  },
+  "maengelliste": [
+    { "id": 1, "beschreibung": "...", "dokument": "...", "relevanz": "hoch|mittel|niedrig", "auswirkung": "..." }
+  ],
+  "fehlende_nachweise": ["...", "..."],
+  "technische_pruefung": {
+    "heizlastberechnung": { "bewertung": "OK|MANGELHAFT|FEHLEND", "details": "..." },
+    "hydraulischer_abgleich": { "bewertung": "OK|MANGELHAFT|FEHLEND", "details": "..." },
+    "anlagenauslegung": { "bewertung": "OK|MANGELHAFT|FEHLEND", "details": "..." },
+    "komponenten": { "bewertung": "OK|MANGELHAFT|FEHLEND", "details": "..." },
+    "regelungstechnik": { "bewertung": "OK|MANGELHAFT|FEHLEND", "details": "..." }
+  },
+  "foerderrechtliche_bewertung": [
+    { "kriterium": "...", "erfuellt": "JA|NEIN|UNKLAR", "begruendung": "...", "quelle": "..." }
+  ],
+  "foerderempfehlung": {
+    "programme": ["..."],
+    "geschaetzte_foerderquote": "...",
+    "moegliche_boni": ["..."],
+    "erforderliche_nachbesserungen": ["..."]
+  }
+}`;
+
+// ─── API Key ────────────────────────────────────────────
+const apiInput = document.getElementById('apiKeyInput');
+const setupBanner = document.getElementById('setupBanner');
+
+const savedKey = localStorage.getItem('anthropic_api_key') || '';
+if (savedKey) { apiInput.value = savedKey; }
+
+apiInput.addEventListener('input', () => {
+  const v = apiInput.value.trim();
+  if (v.startsWith('sk-')) localStorage.setItem('anthropic_api_key', v);
+  updateBtn();
+});
+
+function getKey() { return (apiInput.value.trim() || localStorage.getItem('anthropic_api_key') || ''); }
+
+// ─── File handling ───────────────────────────────────────
+const dropzone   = document.getElementById('dropzone');
+const fileInput  = document.getElementById('fileInput');
+const fileList   = document.getElementById('fileList');
+const analyzeBtn = document.getElementById('analyzeBtn');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('over'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('over'));
+dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('over'); addFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', e => addFiles(e.target.files));
+
+function addFiles(files) {
+  Array.from(files).forEach(f => {
+    const ok = f.type === 'application/pdf' || f.type.startsWith('image/');
+    if (!ok) return;
+    if (state.files.find(x => x.name === f.name)) return;
+    state.files.push({ file: f, name: f.name, size: (f.size/1024).toFixed(1)+' KB', type: f.type, docType: 'sonstiges' });
+  });
+  renderFileList();
+  updateBtn();
+}
+
+function removeFile(name) {
+  state.files = state.files.filter(f => f.name !== name);
+  renderFileList(); updateBtn();
+}
+
+function setDocType(name, val) {
+  const f = state.files.find(x => x.name === name);
+  if (f) f.docType = val;
+}
+
+function renderFileList() {
+  fileList.innerHTML = state.files.map(f => `
+    <div class="file-item">
+      <span style="font-size:20px">${f.type === 'application/pdf' ? '📄' : '🖼️'}</span>
+      <div class="file-info">
+        <div class="file-name">${esc(f.name)}</div>
+        <div class="file-size">${f.size}</div>
+      </div>
+      <select class="file-type-select" onchange="setDocType('${esc(f.name)}', this.value)">
+        ${DOCUMENT_TYPES.map(d => `<option value="${d.id}"${f.docType===d.id?' selected':''}>${d.label}</option>`).join('')}
+      </select>
+      <button class="btn-remove" onclick="removeFile('${esc(f.name)}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function updateBtn() {
+  const count = state.files.length;
+  const hasKey = getKey().length > 0;
+  analyzeBtn.disabled = count === 0 || !hasKey;
+  analyzeBtn.textContent = `🔍 Förderfähigkeit prüfen (${count} Dokument${count!==1?'e':''})`;
+}
+
+// ─── Analysis ────────────────────────────────────────────
+analyzeBtn.addEventListener('click', analyze);
+
+async function analyze() {
+  const key = getKey();
+  if (!key) { showError('Bitte zuerst den API-Key eingeben.'); return; }
+  if (!state.files.length) return;
+
+  analyzeBtn.disabled = true;
+  analyzeBtn.innerHTML = '<span class="spinner"></span>KI-Analyse läuft – bitte warten…';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('results').innerHTML = '';
+
+  try {
+    const contentBlocks = [];
+    for (const uf of state.files) {
+      const label = DOCUMENT_TYPES.find(d => d.id === uf.docType)?.label || 'Unterlage';
+      contentBlocks.push({ type: 'text', text: `\n\n--- DOKUMENT: ${label} (${uf.name}) ---\n` });
+      const b64 = await toBase64(uf.file);
+      if (uf.type === 'application/pdf') {
+        contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } });
+      } else {
+        contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: uf.type, data: b64 } });
+      }
+    }
+    contentBlocks.push({ type: 'text', text: '\n\nBitte führe jetzt die vollständige BEG-Förderfähigkeitsprüfung durch und antworte ausschließlich im vorgegebenen JSON-Format.' });
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: contentBlocks }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `API-Fehler ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const text = (data.content || []).map(i => i.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    let parsed;
+    try { parsed = JSON.parse(clean); }
+    catch { throw new Error('Antwort konnte nicht verarbeitet werden. Bitte erneut versuchen.'); }
+
+    renderResults(parsed);
+  } catch(e) {
+    showError(e.message);
+  } finally {
+    analyzeBtn.disabled = false;
+    updateBtn();
+  }
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Lesefehler'));
+    r.readAsDataURL(file);
+  });
+}
+
+// ─── Render ──────────────────────────────────────────────
+function badge(v) {
+  const map = { JA:'ja', NEIN:'nein', BEDINGT:'bedingt', OK:'ok', MANGELHAFT:'mangelhaft', FEHLEND:'fehlend', UNKLAR:'unklar' };
+  return `<span class="badge badge-${map[v]||'ok'}">${esc(v)}</span>`;
+}
+function relevanzBadge(v) {
+  return `<span class="relevanz-badge relevanz-${(v||'').toLowerCase()}">${esc(v)}</span>`;
+}
+
+function gesamtStyle(v) {
+  if (v === 'Förderfähig')               return { bg:'#d1fae5', color:'#065f46', border:'#6ee7b7', chip:'#065f46' };
+  if (v === 'Nicht förderfähig')         return { bg:'#fee2e2', color:'#991b1b', border:'#fca5a5', chip:'#991b1b' };
+  return                                        { bg:'#fef3c7', color:'#92400e', border:'#fcd34d', chip:'#92400e' };
+}
+
+function section(title, icon, bodyHtml) {
+  const id = 'sec_' + Math.random().toString(36).slice(2);
+  return `
+    <div class="section">
+      <button class="section-header" onclick="toggleSection('${id}')">
+        <span class="section-header-icon">${icon}</span>
+        <span class="section-header-title">${esc(title)}</span>
+        <span class="section-header-arrow" id="arr_${id}">▾</span>
+      </button>
+      <div class="section-body open" id="${id}">${bodyHtml}</div>
+    </div>`;
+}
+
+function toggleSection(id) {
+  const body = document.getElementById(id);
+  const arr  = document.getElementById('arr_' + id);
+  body.classList.toggle('open');
+  arr.textContent = body.classList.contains('open') ? '▾' : '▸';
+}
+
+const TECH_LABELS = {
+  heizlastberechnung: 'Heizlastberechnung (DIN EN 12831)',
+  hydraulischer_abgleich: 'Hydraulischer Abgleich',
+  anlagenauslegung: 'Anlagenauslegung',
+  komponenten: 'Komponenten & Geräte',
+  regelungstechnik: 'Regelungstechnik'
+};
+
+function renderResults(r) {
+  const container = document.getElementById('results');
+  let html = '';
+
+  // Gesamtergebnis
+  if (r.gesamtergebnis) {
+    const g = r.gesamtergebnis;
+    const s = gesamtStyle(g.gesamtbewertung);
+    html += `
+      <div class="result-overall" style="background:${s.bg};border-color:${s.border}">
+        <div class="result-overall-header">
+          <span style="font-size:22px">📊</span>
+          <span class="result-overall-title" style="color:${s.color}">Gesamtergebnis</span>
+          <span class="result-overall-chip" style="background:${s.chip}">${esc(g.gesamtbewertung)}</span>
+        </div>
+        <div class="result-badges">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;font-weight:600;color:${s.color}">BAFA:</span>${badge(g.bafa)}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;font-weight:600;color:${s.color}">KfW:</span>${badge(g.kfw)}
+          </div>
+        </div>
+        <p class="result-summary" style="color:${s.color}">${esc(g.zusammenfassung)}</p>
+      </div>`;
+  }
+
+  // Mängelliste
+  if (r.maengelliste?.length) {
+    const body = r.maengelliste.map(m => `
+      <div class="mangel-item">
+        <div class="mangel-header">
+          <span class="mangel-title">#${m.id} ${esc(m.beschreibung)}</span>
+          ${relevanzBadge(m.relevanz)}
+        </div>
+        <div class="mangel-meta">📄 <strong>Dokument:</strong> ${esc(m.dokument)}</div>
+        <div class="mangel-meta">📌 <strong>Auswirkung:</strong> ${esc(m.auswirkung)}</div>
+      </div>`).join('');
+    html += section(`Mängelliste (${r.maengelliste.length})`, '⚠️', body);
+  }
+
+  // Fehlende Nachweise
+  if (r.fehlende_nachweise?.length) {
+    const body = '<ul style="padding-left:20px">' +
+      r.fehlende_nachweise.map(n => `<li style="font-size:14px;color:#374151;margin-bottom:6px">${esc(n)}</li>`).join('') +
+      '</ul>';
+    html += section(`Fehlende Nachweise (${r.fehlende_nachweise.length})`, '📋', body);
+  }
+
+  // Technische Prüfung
+  if (r.technische_pruefung) {
+    const body = Object.entries(r.technische_pruefung).map(([k,v]) => `
+      <div class="tech-row">
+        <div class="tech-label">${esc(TECH_LABELS[k]||k)}</div>
+        ${badge(v.bewertung)}
+        <div class="tech-detail">${esc(v.details)}</div>
+      </div>`).join('');
+    html += section('Technische Prüfung', '🔧', body);
+  }
+
+  // Förderrechtliche Bewertung
+  if (r.foerderrechtliche_bewertung?.length) {
+    const body = r.foerderrechtliche_bewertung.map(b => `
+      <div class="foerder-row">
+        <div class="foerder-header">
+          <span class="foerder-title">${esc(b.kriterium)}</span>${badge(b.erfuellt)}
+        </div>
+        <div class="foerder-desc">${esc(b.begruendung)}</div>
+        ${b.quelle ? `<div class="foerder-quelle">📚 ${esc(b.quelle)}</div>` : ''}
+      </div>`).join('');
+    html += section('Förderrechtliche Bewertung', '⚖️', body);
+  }
+
+  // Förderempfehlung
+  if (r.foerderempfehlung) {
+    const fe = r.foerderempfehlung;
+    let body = '';
+    if (fe.programme?.length) {
+      body += `<div class="sub-title">Empfohlene Programme</div>
+        <div style="margin-bottom:14px">${fe.programme.map(p=>`<span class="prog-chip">${esc(p)}</span>`).join('')}</div>`;
+    }
+    if (fe.geschaetzte_foerderquote) {
+      body += `<div style="margin-bottom:14px;font-size:14px">
+        <strong style="color:#1e3a5f">Geschätzte Förderquote: </strong>
+        <span class="quote-chip">${esc(fe.geschaetzte_foerderquote)}</span></div>`;
+    }
+    if (fe.moegliche_boni?.length) {
+      body += `<div class="sub-title" style="margin-top:6px">Mögliche Boni</div>` +
+        fe.moegliche_boni.map(b=>`<div class="emp-row"><span class="emp-row-icon-green">✓</span>${esc(b)}</div>`).join('');
+    }
+    if (fe.erforderliche_nachbesserungen?.length) {
+      body += `<div class="sub-title-warn" style="margin-top:12px">Erforderliche Nachbesserungen</div>` +
+        fe.erforderliche_nachbesserungen.map(n=>`<div class="emp-row"><span class="emp-row-icon-amber">→</span>${esc(n)}</div>`).join('');
+    }
+    html += section('Förderempfehlung', '💶', body);
+  }
+
+  html += `<div class="footer-note">
+    Prüfung basiert auf BEG-Richtlinien, TMA, BAFA- und KfW-Förderbedingungen (Stand: aktuell verfügbare Fassungen).
+    Kein Ersatz für rechtverbindliche Beratung.
+  </div>`;
+
+  container.innerHTML = html;
+  container.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function showError(msg) {
+  const b = document.getElementById('errorBox');
+  b.innerHTML = `⚠️ <strong>Fehler:</strong> ${esc(msg)}`;
+  b.style.display = 'block';
+}
+
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
