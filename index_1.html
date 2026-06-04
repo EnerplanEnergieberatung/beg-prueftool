@@ -548,7 +548,8 @@ async function analyze() {
 
     const data = await resp.json();
     const text = (data.content || []).map(i => i.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
+    const fence = String.fromCharCode(96,96,96);
+    const clean = text.replace(new RegExp(fence + 'json|' + fence, 'g'), '').trim();
     let parsed;
     try { parsed = JSON.parse(clean); }
     catch { throw new Error('Antwort konnte nicht verarbeitet werden. Bitte erneut versuchen.'); }
